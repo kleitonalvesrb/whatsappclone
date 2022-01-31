@@ -9,30 +9,47 @@ import ChatListItem from './components/ChatList/ChatListItem';
 import ChatIntro from './components/ChatIntro/ChatInto';
 import ChatWindow from './components/ChatWindow/ChatWindow';
 import NewChat from './components/NewChat/NewChat';
+import Login from './components/Login/Login';
+import Api from './Api/Api';
 // eslint-disable-next-line import/no-anonymous-default-export
 export default () => {
-  const [chatlist, setChatlist] = useState([
-    { chatId: 1, title: 'Fulano de tal', image: 'https://www.w3schools.com/howto/img_avatar.png' },
-    { chatId: 2, title: 'Fulano de tal 2', image: 'https://www.w3schools.com/howto/img_avatar.png' },
-    { chatId: 3, title: 'Fulano de tal 3', image: 'https://www.w3schools.com/howto/img_avatar.png' },
-    { chatId: 4, title: 'Fulano de tal 4', image: 'https://www.w3schools.com/howto/img_avatar.png' },
-
-  ]);
+  const [chatlist, setChatlist] = useState([]);
   const [activeChat, setActiveChat] = useState({});
-  const [user, setUser] = useState({
-    id: 1234,
-    avatar: 'https://www.w3schools.com/howto/img_avatar.png',
-    name: 'Kleiton Batista'
-  });
+  const [user, setUser] = useState(null);
 
   const [showNewChat, setShowNewChat] = useState(false);
   useEffect(() => {
-    console.log('parou em 03H15m useRef em 02:55 aproximadamente');
+    console.log('parou em 04:42 useRef em 02:55' +
+      'aproximadamente, 3:20 começa firebase, login com fb 3:26:50');
   }, [])
 
-  const handleNewChat = () =>{
+  useEffect(() => {
+    if (user !== null) {
+      let unsub = Api.onChatList(user.id, setChatlist);
+      return unsub;
+    }
+  }, [user]);
+  const handleNewChat = () => {
     setShowNewChat(true);
   }
+
+  const handleLoginData = async (u) => {
+    let newUser = {
+      id: u.uid,
+      name: u.displayName,
+      avatar: u.photoURL
+    }
+
+    //adiciona o usuario no banco de dados do firebase
+    await Api.addUser(newUser);
+    setUser(newUser);
+  }
+
+  //tela de login
+  if (user === null) {
+    return (<Login onReceive={handleLoginData} />)
+  }
+
   return (
     <div className="app-window">
       <div className='sidebar'>
@@ -76,7 +93,7 @@ export default () => {
       </div>
       <div className='contetarea'>
         {activeChat.chatId !== undefined &&
-          <ChatWindow user={user} />
+          <ChatWindow user={user} data={activeChat} />
         }
         {activeChat.chatId === undefined &&
           <ChatIntro />

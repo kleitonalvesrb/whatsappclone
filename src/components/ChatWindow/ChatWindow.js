@@ -3,10 +3,11 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import Search from '@material-ui/icons/Search';
 import EmojiPicker from 'emoji-picker-react';
 import React, { useEffect, useState, useRef } from 'react';
+import Api from '../../Api/Api';
 import MessegeItem from '../MessegeItem/MessegeItem';
 import './ChatWindow.css'
 
-function ChatWindow({ user }) {
+function ChatWindow({ user, data }) {
     let recognition = null;
     let SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition !== undefined) {
@@ -16,32 +17,23 @@ function ChatWindow({ user }) {
     const [emojiOpen, setEmojiOpen] = useState(false);
     const [text, setText] = useState('');
     const [listening, setListening] = useState(false);
-    const [list, setList] = useState([
-        { author: 123, body: 'Kleiton Alves Rodrigues batista, 26 anos, nascido em 01/03/1995 formado em sistemas de informaçãoes pela universidade católica de brasilia em 2017/1, atuo como desenvolvedor de software desde então, comecei atuando dentro do ministerio da educação onde atuei por 5 anos em diversos sistemas da Secretaria de educação básica (SEB)' },
-        { author: 123, body: 'cpf 044.179.961-21' },
-        { author: 1234, body: 'telefone 61 98187-9959' },
-        { author: 123, body: 'Kleiton Alves Rodrigues batista, 26 anos, nascido em 01/03/1995 formado em sistemas de informaçãoes pela universidade católica de brasilia em 2017/1, atuo como desenvolvedor de software desde então, comecei atuando dentro do ministerio da educação onde atuei por 5 anos em diversos sistemas da Secretaria de educação básica (SEB)' },
-        { author: 123, body: 'cpf 044.179.961-21' },
-        { author: 1234, body: 'telefone 61 98187-9959' },
-        { author: 123, body: 'Kleiton Alves Rodrigues batista, 26 anos, nascido em 01/03/1995 formado em sistemas de informaçãoes pela universidade católica de brasilia em 2017/1, atuo como desenvolvedor de software desde então, comecei atuando dentro do ministerio da educação onde atuei por 5 anos em diversos sistemas da Secretaria de educação básica (SEB)' },
-        { author: 123, body: 'cpf 044.179.961-21' },
-        { author: 1234, body: 'telefone 61 98187-9959' },
-        { author: 123, body: 'Kleiton Alves Rodrigues batista, 26 anos, nascido em 01/03/1995 formado em sistemas de informaçãoes pela universidade católica de brasilia em 2017/1, atuo como desenvolvedor de software desde então, comecei atuando dentro do ministerio da educação onde atuei por 5 anos em diversos sistemas da Secretaria de educação básica (SEB)' },
-        { author: 123, body: 'cpf 044.179.961-21' },
-        { author: 1234, body: 'telefone 61 98187-9959' },
-        { author: 123, body: 'Kleiton Alves Rodrigues batista, 26 anos, nascido em 01/03/1995 formado em sistemas de informaçãoes pela universidade católica de brasilia em 2017/1, atuo como desenvolvedor de software desde então, comecei atuando dentro do ministerio da educação onde atuei por 5 anos em diversos sistemas da Secretaria de educação básica (SEB)' },
-        { author: 123, body: 'cpf 044.179.961-21' },
-        { author: 1234, body: 'telefone 61 98187-9959' },
-        { author: 123, body: 'Kleiton Alves Rodrigues batista, 26 anos, nascido em 01/03/1995 formado em sistemas de informaçãoes pela universidade católica de brasilia em 2017/1, atuo como desenvolvedor de software desde então, comecei atuando dentro do ministerio da educação onde atuei por 5 anos em diversos sistemas da Secretaria de educação básica (SEB)' },
-        { author: 123, body: 'cpf 044.179.961-21' },
-        { author: 1234, body: 'telefone 61 98187-9959' },
-        { author: 123, body: 'Kleiton Alves Rodrigues batista, 26 anos, nascido em 01/03/1995 formado em sistemas de informaçãoes pela universidade católica de brasilia em 2017/1, atuo como desenvolvedor de software desde então, comecei atuando dentro do ministerio da educação onde atuei por 5 anos em diversos sistemas da Secretaria de educação básica (SEB)' },
-        { author: 123, body: 'cpf 044.179.961-21' },
-        { author: 1234, body: 'telefone 61 98187-9959' },
-        { author: 123, body: 'Kleiton Alves Rodrigues batista, 26 anos, nascido em 01/03/1995 formado em sistemas de informaçãoes pela universidade católica de brasilia em 2017/1, atuo como desenvolvedor de software desde então, comecei atuando dentro do ministerio da educação onde atuei por 5 anos em diversos sistemas da Secretaria de educação básica (SEB)' },
-        { author: 123, body: 'cpf 044.179.961-21' },
-        { author: 1234, body: 'telefone 61 98187-9959' },
-    ]);
+    const [list, setList] = useState([]);
+    const [users, setUsers] = useState([]);
+
+
+    const body = useRef();
+    useEffect(() => {
+        if (body.current.scrollHeight > body.current.offsetHeight) {
+            body.current.scrollTop = body.current.scrollHeight - body.current.offsetHeight;
+        }
+    }, [list])
+
+    useEffect(() => {
+        setList([]);
+        let unsub = Api.onChatContet(data.chatId, setList, setUsers);
+        return unsub;
+    }, [data.chatId])
+
 
     const handleEmojiClick = (e, emojiObject) => {
         setText(text + emojiObject.emoji)
@@ -69,22 +61,26 @@ function ChatWindow({ user }) {
 
         }
     }
-    const handleSendClick = () => {
+    const handleSendClick = (e) => {
+        if (text !== '') {
+            Api.sendMessage(data, user.id, 'text', text, users);
+            setText('');
+            setEmojiOpen(false);
+        }
+    }
+    const handleInpuKeyUp = (e) => {
+        if (e.keyCode === 13) {
+            handleSendClick();
+        }
 
     }
-    const body = useRef();
-    useEffect(() => {
-        if(body.current.scrollHeight > body.current.offsetHeight){
-            body.current.scrollTop = body.current.scrollHeight - body.current.offsetHeight;
-        }
-    }, [list])
 
     return (
         <div className='chatWindow'>
             <div className='chatWindow--header'>
                 <div className='chatWindow--headerinfo'>
-                    <img className='chatWindow--avatar' src='https://www.w3schools.com/howto/img_avatar.png' alt='' />
-                    <div className='chatWindow--name'>Kleiton Batista</div>
+                    <img className='chatWindow--avatar' src={data.image} alt='' />
+                    <div className='chatWindow--name'>{data.title}</div>
                 </div>
                 <div className='chatWindow--headerbuttons'>
                     <div className='chatWindow--btn'>
@@ -133,6 +129,7 @@ function ChatWindow({ user }) {
                         type="text"
                         value={text}
                         onChange={e => setText(e.target.value)}
+                        onKeyUp={handleInpuKeyUp}
                     />
                 </div>
                 <div className='chatWindow--pos'>
