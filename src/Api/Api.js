@@ -75,6 +75,9 @@ export default {
                         if (a.lastMessegeDate === undefined) {
                             return -1;
                         }
+                        if (b.lastMessegeDate === undefined) {
+                            return -1;
+                        }
                         if (a.lastMessegeDate.seconds < b.lastMessegeDate.seconds) {
                             return 1;
                         } else {
